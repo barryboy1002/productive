@@ -2,6 +2,7 @@
 #define GTKMM_TODO_LAYOUT
 
 #include <gtkmm.h>
+#include <giomm.h>
 
 class TodoWindow: public Gtk::Window{
 	public:
@@ -19,6 +20,9 @@ class TodoWindow: public Gtk::Window{
 		//widgets for tasks layout.
 		Gtk::ScrolledWindow m_scroll;
 		Gtk::ListBox list_cont;
+
+		//exeternal files
+		Glib::RefPtr<Gio::File> style_file = Gio::File::create_for_path("styles.css");
 };
 
 #endif

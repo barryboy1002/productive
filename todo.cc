@@ -43,6 +43,14 @@ TodoWindow::~TodoWindow(){
 void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
 		auto row = Gtk::make_managed<Gtk::ListBoxRow>();
+		// 1. Create the CSS Provider
+		auto css_provider = Gtk::CssProvider::create();
+		css_provider->load_from_file(style_file);		// 2. Add it to the default display
+		Gtk::StyleContext::add_provider_for_display(
+    		Gdk::Display::get_default(), 
+    		css_provider, 
+    		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+		);
             	auto hbox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 30);
             	auto label = Gtk::make_managed<Gtk::Label>("Task #");
             	auto check = Gtk::make_managed<Gtk::CheckButton>();
@@ -52,6 +60,7 @@ void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
         	hbox->append(*label);
         	hbox->append(*check);
         	row->set_child(*hbox);
+		row->set_overflow(Gtk::Overflow::HIDDEN);
             
         	list_cont.append(*row);
 	}
