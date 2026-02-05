@@ -15,6 +15,10 @@ class TodoWindow: public Gtk::Window{
 		Gtk::Box OverallCont;
 		Gtk::Box TaskHolder;
 		Gtk::Entry TaskInput;
+
+		//widgets for tasks layout.
+		Gtk::ScrolledWindow m_scroll;
+		Gtk::ListBox list_cont;
 };
 
 #endif

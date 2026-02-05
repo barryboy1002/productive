@@ -23,6 +23,16 @@ TodoWindow::TodoWindow():
 	TaskInput.signal_icon_press().connect(sigc::mem_fun(*this,&TodoWindow::search_for_task));
 	TaskHolder.set_vexpand(true);
 
+	//setting up the listview for tasik
+	m_scroll.set_child(list_cont);
+
+  	// Only show the scrollbars when they are necessary:
+  	m_scroll.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
+  	m_scroll.set_expand();
+	list_cont.set_selection_mode(Gtk::SelectionMode::SINGLE);
+	list_cont.set_margin(10);
+
+	TaskHolder.append(m_scroll);
 	OverallCont.append(TaskHolder);
 	OverallCont.append(TaskInput);
 	}
@@ -32,7 +42,18 @@ TodoWindow::~TodoWindow(){
 
 void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
-		std::cout << "saved" << std::endl;
+		auto row = Gtk::make_managed<Gtk::ListBoxRow>();
+            	auto hbox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 30);
+            	auto label = Gtk::make_managed<Gtk::Label>("Task #");
+            	auto check = Gtk::make_managed<Gtk::CheckButton>();
+		label->set_expand(true);
+        	label->set_halign(Gtk::Align::START);
+
+        	hbox->append(*label);
+        	hbox->append(*check);
+        	row->set_child(*hbox);
+            
+        	list_cont.append(*row);
 	}
 } 
 void TodoWindow::search_for_task(Gtk::Entry::IconPosition icon_pos){
