@@ -30,7 +30,20 @@ TodoWindow::TodoWindow():
   	m_scroll.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
   	m_scroll.set_expand();
 	list_cont.set_selection_mode(Gtk::SelectionMode::SINGLE);
-	list_cont.set_margin(10);
+	list_cont.set_size_request(730, -1);
+	list_cont.set_halign(Gtk::Align::CENTER);
+	list_cont.set_margin_top(20);
+	list_cont.set_margin_bottom(20);
+	//setting up style
+	
+	// 1. Create the CSS Provider
+	auto css_provider = Gtk::CssProvider::create();
+	css_provider->load_from_file(style_file);		// 2. Add it to the default display
+	Gtk::StyleContext::add_provider_for_display(
+		Gdk::Display::get_default(), 
+		css_provider, 
+		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+	);
 
 	TaskHolder.append(m_scroll);
 	OverallCont.append(TaskHolder);
@@ -42,15 +55,7 @@ TodoWindow::~TodoWindow(){
 
 void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
-		auto row = Gtk::make_managed<Gtk::ListBoxRow>();
-		// 1. Create the CSS Provider
-		auto css_provider = Gtk::CssProvider::create();
-		css_provider->load_from_file(style_file);		// 2. Add it to the default display
-		Gtk::StyleContext::add_provider_for_display(
-    		Gdk::Display::get_default(), 
-    		css_provider, 
-    		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-		);
+				auto row = Gtk::make_managed<Gtk::ListBoxRow>();
             	auto hbox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 30);
             	auto label = Gtk::make_managed<Gtk::Label>("Task #");
             	auto check = Gtk::make_managed<Gtk::CheckButton>();
