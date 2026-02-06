@@ -55,9 +55,10 @@ TodoWindow::~TodoWindow(){
 
 void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
-				auto row = Gtk::make_managed<Gtk::ListBoxRow>();
+		Glib::ustring task_text = TaskInput.get_text();
+		auto row = Gtk::make_managed<Gtk::ListBoxRow>();
             	auto hbox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 30);
-            	auto label = Gtk::make_managed<Gtk::Label>("Task #");
+            	auto label = Gtk::make_managed<Gtk::Label>(task_text);
             	auto check = Gtk::make_managed<Gtk::CheckButton>();
 		label->set_expand(true);
         	label->set_halign(Gtk::Align::START);
