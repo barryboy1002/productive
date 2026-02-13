@@ -9,6 +9,8 @@ class TodoWindow: public Gtk::Window{
 		TodoWindow();
 		virtual ~TodoWindow();
 	protected:
+		//functions
+		void show_task();
 		//signal_handlers
 		void save_task(Gtk::Entry::IconPosition icon_pos);
 		void search_for_task(Gtk::Entry::IconPosition icon_pos);

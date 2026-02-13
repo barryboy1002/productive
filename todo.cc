@@ -55,6 +55,10 @@ TodoWindow::~TodoWindow(){
 
 void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
+		show_task();}
+}
+
+void TodoWindow::show_task(){
 		Glib::ustring task_text = TaskInput.get_text();
 		auto row = Gtk::make_managed<Gtk::ListBoxRow>();
             	auto hbox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 30);
@@ -69,8 +73,8 @@ void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 		row->set_overflow(Gtk::Overflow::HIDDEN);
             
         	list_cont.append(*row);
-	}
-} 
+}
+
 void TodoWindow::search_for_task(Gtk::Entry::IconPosition icon_pos){
 
 	if(icon_pos == Gtk::Entry::IconPosition::PRIMARY){
