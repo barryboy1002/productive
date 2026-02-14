@@ -9,13 +9,18 @@ class TodoWindow: public Gtk::Window{
 	public:
 		TodoWindow();
 		virtual ~TodoWindow();
+		//to declutter the constructor  i am going to use functions called setups
+		void taskInputSet();
+		void dialogSet();
+		void taskHolderSet();
 	protected:
 		//functions
 		void show_task();
 		//signal_handlers
 		void save_task(Gtk::Entry::IconPosition icon_pos);
 		void search_for_task(Gtk::Entry::IconPosition icon_pos);
-		void edit_task();
+		void edit_task(Gtk::ListBoxRow* t_row);
+		
 		//widgets for the main window layout
 		Gtk::Box OverallCont;
 		Gtk::Box TaskHolder;

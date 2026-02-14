@@ -5,6 +5,7 @@
 TaskDialog::TaskDialog():
 	Gen_cont(Gtk::Orientation::VERTICAL),
 	save_b("submit"){
+		set_size_request(600,600);
 		set_child(Gen_cont);
 		t_name.set_placeholder_text("enter the task name");
 		t_desc.set_placeholder_text("description");
