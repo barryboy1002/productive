@@ -7,8 +7,12 @@ TaskDialog::TaskDialog():
 	save_b("submit"){
 		set_size_request(600,600);
 		set_child(Gen_cont);
-		t_desc.set_placeholder_text("description");
-
+		t_desc.set_wrap_mode(Gtk::WrapMode::WORD);
+		t_desc.get_style_context()->add_class("task-desc");
+		
+		scrolled.set_child(t_desc);
+		scrolled.set_policy(Gtk::PolicyType::NEVER, Gtk::PolicyType::AUTOMATIC);
+		scrolled.set_propagate_natural_height(true);
 		t_name.add_css_class("task-name");
 		t_desc.add_css_class("task-desc");
 		save_b.add_css_class("submit-task");
@@ -23,7 +27,7 @@ TaskDialog::TaskDialog():
 
 
 		Gen_cont.append(t_name);
-		Gen_cont.append(t_desc);
+		Gen_cont.append(scrolled);
 		Gen_cont.append(save_b);
 
 	}

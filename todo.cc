@@ -132,7 +132,6 @@ void TodoWindow::edit_task(Gtk::ListBoxRow* t_row){
         auto* label = dynamic_cast<Gtk::Label*>(first_widget);
         if (label) {
             std::string text = label->get_text();
-            std::cout << "Selected Task Text: " << text << std::endl;
 	    Dialog.set_task_txt(text);
         }
     }
