@@ -13,6 +13,7 @@ TodoWindow::TodoWindow():
 	set_child(OverallCont);
 	taskInputSet();
 	taskHolderSet();
+	dialogSet();
 	//setting up style
 	
 	// 1. Create the CSS Provider
@@ -77,6 +78,12 @@ void TodoWindow::taskHolderSet(){
 	list_cont.signal_row_activated().connect(sigc::mem_fun(*this,&TodoWindow::edit_task),NULL);
 }
 
+void TodoWindow::dialogSet(){
+	Dialog.set_default_size(250, 100);
+  	Dialog.set_transient_for(*this);
+ 	Dialog.set_modal();
+	Dialog.set_hide_on_close();}
+
 void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
 		show_task();
@@ -109,6 +116,25 @@ void TodoWindow::search_for_task(Gtk::Entry::IconPosition icon_pos){
 
 
 void TodoWindow::edit_task(Gtk::ListBoxRow* t_row){
-	auto row_child = t_row ->get_child();
 	Dialog.set_visible(true);
+	if (!t_row) return;
+
+      // 1. Get the immediate child (The Gtk::Box)
+      Gtk::Widget* row_child = t_row->get_child();
+
+     // 2. Cast it to a Box so we can look at its children
+     auto* box = dynamic_cast<Gtk::Box*>(row_child);
+     if (box) {
+        // 3. Get the first child of the box (The Label)
+        Gtk::Widget* first_widget = box->get_first_child();
+        
+        // 4. Cast that widget to a Label
+        auto* label = dynamic_cast<Gtk::Label*>(first_widget);
+        if (label) {
+            std::string text = label->get_text();
+            std::cout << "Selected Task Text: " << text << std::endl;
+	    Dialog.set_task_txt(text);
+        }
+    }
 }
+

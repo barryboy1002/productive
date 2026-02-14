@@ -7,7 +7,6 @@ TaskDialog::TaskDialog():
 	save_b("submit"){
 		set_size_request(600,600);
 		set_child(Gen_cont);
-		t_name.set_placeholder_text("enter the task name");
 		t_desc.set_placeholder_text("description");
 
 		t_name.add_css_class("task-name");
@@ -29,4 +28,8 @@ TaskDialog::TaskDialog():
 
 	}
 TaskDialog::~TaskDialog(){
+}
+
+void TaskDialog::set_task_txt(const Glib::ustring& text){
+	t_name.set_text(text);
 }

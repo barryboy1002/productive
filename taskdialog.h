@@ -8,6 +8,7 @@ class TaskDialog :public Gtk::Window{
 	public:
 		TaskDialog();
 		~TaskDialog() override;
+		void set_task_txt(const Glib::ustring& text);
 	protected:
 		//signal handlers
 		void on_save();
