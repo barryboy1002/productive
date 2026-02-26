@@ -1,6 +1,6 @@
 #include "tasklayout.h"
 #include <iostream>
-
+#include "../storage/taskstorage.h"
 
 TodoWindow::TodoWindow():
 	OverallCont(Gtk::Orientation::VERTICAL),
@@ -14,6 +14,7 @@ TodoWindow::TodoWindow():
 	taskInputSet();
 	taskHolderSet();
 	dialogSet();
+	load_startup_data();
 	//setting up style
 	
 	// 1. Create the CSS Provider
@@ -86,12 +87,15 @@ void TodoWindow::dialogSet(){
 
 void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
-		show_task();
+		show_task(TaskInput.get_text());
+		//setting up the dialogs additional properties
+		Dialog.set_task_txt(TaskInput.get_text());
+		Dialog.set_visible(true);
+
 	}
 }
 
-void TodoWindow::show_task(){
-		Glib::ustring task_text = TaskInput.get_text();
+void TodoWindow::show_task(Glib::ustring task_text){
 		auto row = Gtk::make_managed<Gtk::ListBoxRow>();
             	auto hbox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 30);
             	auto label = Gtk::make_managed<Gtk::Label>(task_text);
@@ -118,22 +122,24 @@ void TodoWindow::search_for_task(Gtk::Entry::IconPosition icon_pos){
 void TodoWindow::edit_task(Gtk::ListBoxRow* t_row){
 	Dialog.set_visible(true);
 	if (!t_row) return;
-
-      // 1. Get the immediate child (The Gtk::Box)
+      std::cout << t_row->get_index() << std::endl;
       Gtk::Widget* row_child = t_row->get_child();
 
-     // 2. Cast it to a Box so we can look at its children
      auto* box = dynamic_cast<Gtk::Box*>(row_child);
      if (box) {
-        // 3. Get the first child of the box (The Label)
         Gtk::Widget* first_widget = box->get_first_child();
-        
-        // 4. Cast that widget to a Label
         auto* label = dynamic_cast<Gtk::Label*>(first_widget);
         if (label) {
             std::string text = label->get_text();
 	    Dialog.set_task_txt(text);
         }
     }
+}
+
+
+void TodoWindow::load_startup_data(){
+	std::vector<std::string> tasklist = get_taskname_list();
+	for (auto const &taskname: tasklist){
+		show_task(taskname);}
 }
 

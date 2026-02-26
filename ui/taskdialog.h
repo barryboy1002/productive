@@ -14,12 +14,19 @@ class TaskDialog :public Gtk::Window{
 		//signal handlers
 		void on_save();
 		void on_cancel();
-		
+		//for setting up the widgets to decluster the conctructor definition
+		void prior_area_set();
+		void set_text_input_area();
 		//widgets
 		Gtk::ScrolledWindow scrolled;
 		Gtk::Box Gen_cont;
 		Gtk::Entry t_name;
 		Gtk::TextView t_desc;
+		Gtk::Box priorities_cont;
+		Gtk::Button cal_button;
+		Gtk::DropDown p_drop;
+		Glib::RefPtr<Gtk::StringList> priority;
+
 		Gtk::Button save_b;
 		
 		Glib::RefPtr<Gio::File> style_file2 = Gio::File::create_for_path("styles2.css");
