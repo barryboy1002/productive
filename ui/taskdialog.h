@@ -8,7 +8,7 @@ class TaskDialog :public Gtk::Window{
 	public:
 		TaskDialog();
 		~TaskDialog() override;
-		void set_task_txt(const Glib::ustring& text);
+		void set_task_txt(const Glib::ustring& t_text,const Glib::ustring& t_desc,int levl);
 
 	protected:
 		//signal handlers
@@ -25,7 +25,9 @@ class TaskDialog :public Gtk::Window{
 		Gtk::Box priorities_cont;
 		Gtk::Button cal_button;
 		Gtk::DropDown p_drop;
+		
 		Glib::RefPtr<Gtk::StringList> priority;
+		Glib::RefPtr<Gtk::TextBuffer> m_txtbuffer;
 
 		Gtk::Button save_b;
 		

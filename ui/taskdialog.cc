@@ -39,8 +39,15 @@ TaskDialog::~TaskDialog(){
 
 }
 
-void TaskDialog::set_task_txt(const Glib::ustring& text){
-	t_name.set_text(text);
+void TaskDialog::set_text_input_area(){
+		
+}
+
+void TaskDialog::set_task_txt(const Glib::ustring& t_text,const Glib::ustring& desc_txt,int levl){
+	t_name.set_text(t_text);
+	auto desc_buffer = t_desc.get_buffer();
+  desc_buffer->set_text(desc_txt);
+  p_drop.set_selected(levl);
 }
 
 void TaskDialog::prior_area_set(){
@@ -65,9 +72,10 @@ void TaskDialog::prior_area_set(){
 
 void TaskDialog::on_save(){
 	//getting the desc text
-	auto desc_buffer = t_desc.get_buffer();
+  auto desc_buffer = t_desc.get_buffer();
 	Glib::ustring desc_text = desc_buffer->get_text();
-	Task mytask(t_name.get_text(),desc_text,"1990-12-21",Priority(p_drop.get_selected()));
+	Task mytask(t_name.get_text(), desc_text, static_cast<Priority>(p_drop.get_selected()), "1990-12-21");
 	mytask.add_to_db();
+	
 	
 	}

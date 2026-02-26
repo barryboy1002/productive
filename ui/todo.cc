@@ -2,6 +2,10 @@
 #include <iostream>
 #include "../storage/taskstorage.h"
 
+
+
+std::vector<task_state> tasklist = get_taskname_list();
+
 TodoWindow::TodoWindow():
 	OverallCont(Gtk::Orientation::VERTICAL),
 	TaskHolder(Gtk::Orientation::VERTICAL),
@@ -89,7 +93,7 @@ void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
 		show_task(TaskInput.get_text());
 		//setting up the dialogs additional properties
-		Dialog.set_task_txt(TaskInput.get_text());
+		Dialog.set_task_txt(TaskInput.get_text(),"",0);
 		Dialog.set_visible(true);
 
 	}
@@ -100,15 +104,15 @@ void TodoWindow::show_task(Glib::ustring task_text){
             	auto hbox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 30);
             	auto label = Gtk::make_managed<Gtk::Label>(task_text);
             	auto check = Gtk::make_managed<Gtk::CheckButton>();
-		label->set_expand(true);
-        	label->set_halign(Gtk::Align::START);
+		          label->set_expand(true);
+        	    label->set_halign(Gtk::Align::START);
 
-        	hbox->append(*label);
-        	hbox->append(*check);
-        	row->set_child(*hbox);
-		row->set_overflow(Gtk::Overflow::HIDDEN);
+        	    hbox->append(*label);
+        	    hbox->append(*check);
+        	    row->set_child(*hbox);
+		          row->set_overflow(Gtk::Overflow::HIDDEN);
             
-        	list_cont.append(*row);
+        	    list_cont.append(*row);
 }
 
 void TodoWindow::search_for_task(Gtk::Entry::IconPosition icon_pos){
@@ -122,7 +126,6 @@ void TodoWindow::search_for_task(Gtk::Entry::IconPosition icon_pos){
 void TodoWindow::edit_task(Gtk::ListBoxRow* t_row){
 	Dialog.set_visible(true);
 	if (!t_row) return;
-      std::cout << t_row->get_index() << std::endl;
       Gtk::Widget* row_child = t_row->get_child();
 
      auto* box = dynamic_cast<Gtk::Box*>(row_child);
@@ -131,15 +134,19 @@ void TodoWindow::edit_task(Gtk::ListBoxRow* t_row){
         auto* label = dynamic_cast<Gtk::Label*>(first_widget);
         if (label) {
             std::string text = label->get_text();
-	    Dialog.set_task_txt(text);
+            //get the specified task object and its info from storage;
+            task_state tstate = tasklist[t_row->get_index()];
+            auto tsk = get_task_info(tstate.task_id);
+            Dialog.set_task_txt(tsk->name, tsk->desc, static_cast<int>(tsk->levl));
+
+            
         }
     }
 }
 
 
 void TodoWindow::load_startup_data(){
-	std::vector<std::string> tasklist = get_taskname_list();
 	for (auto const &taskname: tasklist){
-		show_task(taskname);}
+		show_task(taskname.task_name);}
 }
 
