@@ -66,16 +66,22 @@ void TaskDialog::prior_area_set(){
 	priorities_cont.append(cal_button);
 	priorities_cont.append(*spacer);
 	priorities_cont.append(p_drop);
+	priorities_cont.add_css_class("priorities-row");
 
 }
 
+void TaskDialog::on_save() {
+    auto desc_buffer = t_desc.get_buffer();
+    Glib::ustring desc_text = desc_buffer->get_text();
+    Glib::ustring name_text = t_name.get_text();
 
-void TaskDialog::on_save(){
-	//getting the desc text
-  auto desc_buffer = t_desc.get_buffer();
-	Glib::ustring desc_text = desc_buffer->get_text();
-	Task mytask(t_name.get_text(), desc_text, static_cast<Priority>(p_drop.get_selected()), "1990-12-21");
-	mytask.add_to_db();
-	
-	
-	}
+    Task mytask(name_text, desc_text, static_cast<Priority>(p_drop.get_selected()), "1990-12-21");
+    int new_id = mytask.add_to_db();
+
+    if (new_id != -1) {
+        m_signal_task_saved.emit(new_id, name_text);
+        set_visible(false);
+    } else {
+        std::cerr << "Save failed, not adding row" << std::endl;
+    }
+}

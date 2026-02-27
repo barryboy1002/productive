@@ -33,10 +33,11 @@ public:
     Task(std::string tname, std::string tdesc, Priority tlevl, std::string tdate)
         : name{tname}, desc{tdesc}, levl{tlevl}, date{tdate} {}
 
-    void add_to_db();
+    int add_to_db();
     void update_db_info(); // Fixed typo from 'updatde'
 };
 
 // 4. Global Function Declarations
+extern pqxx::connection conn;
 std::vector<task_state> get_taskname_list();
 std::unique_ptr<Task> get_task_info(int taskid);

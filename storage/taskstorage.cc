@@ -12,16 +12,18 @@ static void ensure_connected() {
     }
 }
 
-void Task::add_to_db() {
+int Task::add_to_db() {
     try {
-        ensure_connected();
         pqxx::work tx(conn);
-        tx.exec(
-            "INSERT INTO taskinfo (taskname, taskdesc, priority, duedate) VALUES ($1, $2, $3, $4)",
+        auto result = tx.exec(
+            "INSERT INTO taskinfo (taskname, taskdesc, priority, duedate) "
+            "VALUES ($1, $2, $3, $4) RETURNING tasknum",
             pqxx::params(name, desc, levl, date));
         tx.commit();
+        return result[0][0].as<int>();
     } catch (const std::exception &e) {
         std::cerr << "Database error in add_to_db: " << e.what() << std::endl;
+        return -1;
     }
 }
 

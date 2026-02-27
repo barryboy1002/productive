@@ -9,7 +9,10 @@ class TaskDialog :public Gtk::Window{
 		TaskDialog();
 		~TaskDialog() override;
 		void set_task_txt(const Glib::ustring& t_text,const Glib::ustring& t_desc,int levl);
-
+		// signal that fires after successful db save, carrying the new id and name
+    sigc::signal<void(int, Glib::ustring)> signal_task_saved() {
+        return m_signal_task_saved;
+    }
 	protected:
 		//signal handlers
 		void on_save();
@@ -32,6 +35,6 @@ class TaskDialog :public Gtk::Window{
 		Gtk::Button save_b;
 		
 		Glib::RefPtr<Gio::File> style_file2 = Gio::File::create_for_path("styles2.css");
-
+		sigc::signal<void(int, Glib::ustring)> m_signal_task_saved;
 };
 #endif

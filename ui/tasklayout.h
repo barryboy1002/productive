@@ -13,9 +13,10 @@ class TodoWindow: public Gtk::Window{
 		void taskInputSet();
 		void dialogSet();
 		void taskHolderSet();
+		void on_task_saved(int task_id, Glib::ustring task_name);
 	protected:
 		//functions
-		void show_task(Glib::ustring task_text);
+		void show_task(Glib::ustring task_text, int task_id);
 		void load_startup_data();
 		//signal handlers
 		void save_task(Gtk::Entry::IconPosition icon_pos);

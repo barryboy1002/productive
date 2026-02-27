@@ -33,6 +33,10 @@ TodoWindow::TodoWindow():
 	TaskHolder.append(m_scroll);
 	OverallCont.append(TaskHolder);
 	OverallCont.append(TaskInput);
+	Dialog.signal_task_saved().connect(
+        sigc::mem_fun(*this, &TodoWindow::on_task_saved)
+    );
+
 	}
 
 TodoWindow::~TodoWindow(){
@@ -89,9 +93,15 @@ void TodoWindow::dialogSet(){
  	Dialog.set_modal();
 	Dialog.set_hide_on_close();}
 
+void TodoWindow::on_task_saved(int task_id, Glib::ustring task_name) {
+    show_task(task_name, task_id);
+    // also keep tasklist in sync so edit_task() works on new rows
+    tasklist.push_back(task_state{task_id, std::string(task_name)});
+}
+
+
 void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
-		show_task(TaskInput.get_text());
 		//setting up the dialogs additional properties
 		Dialog.set_task_txt(TaskInput.get_text(),"",0);
 		Dialog.set_visible(true);
@@ -99,20 +109,44 @@ void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	}
 }
 
-void TodoWindow::show_task(Glib::ustring task_text){
-		auto row = Gtk::make_managed<Gtk::ListBoxRow>();
-            	auto hbox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 30);
-            	auto label = Gtk::make_managed<Gtk::Label>(task_text);
-            	auto check = Gtk::make_managed<Gtk::CheckButton>();
-		          label->set_expand(true);
-        	    label->set_halign(Gtk::Align::START);
+void TodoWindow::show_task(Glib::ustring task_text, int task_id) {
+    auto row     = Gtk::make_managed<Gtk::ListBoxRow>();
+    auto hbox    = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 12);
+    auto label   = Gtk::make_managed<Gtk::Label>(task_text);
+    auto check   = Gtk::make_managed<Gtk::CheckButton>();
+    auto del_btn = Gtk::make_managed<Gtk::Button>();
 
-        	    hbox->append(*label);
-        	    hbox->append(*check);
-        	    row->set_child(*hbox);
-		          row->set_overflow(Gtk::Overflow::HIDDEN);
-            
-        	    list_cont.append(*row);
+    // store task_id directly on the row using set_data
+    row->set_data("task_id", GINT_TO_POINTER(task_id));
+
+    del_btn->set_icon_name("user-trash-symbolic");
+    del_btn->add_css_class("delete-btn");
+    del_btn->set_has_frame(false);
+    del_btn->set_valign(Gtk::Align::CENTER);
+
+    del_btn->signal_clicked().connect([this, row, task_id]() {
+        try {
+            pqxx::work tx(conn);
+            tx.exec("DELETE FROM taskinfo WHERE tasknum = $1", pqxx::params(task_id));
+            tx.commit();
+            list_cont.remove(*row);
+        } catch (const std::exception &e) {
+            std::cerr << "Delete error: " << e.what() << std::endl;
+        }
+    });
+
+    hbox->add_css_class("task-row-box");
+    label->add_css_class("task-label");
+    label->set_expand(true);
+    label->set_halign(Gtk::Align::START);
+
+    hbox->append(*label);
+    hbox->append(*check);
+    hbox->append(*del_btn);
+    row->set_child(*hbox);
+    row->set_overflow(Gtk::Overflow::HIDDEN);
+
+    list_cont.append(*row);
 }
 
 void TodoWindow::search_for_task(Gtk::Entry::IconPosition icon_pos){
@@ -123,30 +157,30 @@ void TodoWindow::search_for_task(Gtk::Entry::IconPosition icon_pos){
 }
 
 
-void TodoWindow::edit_task(Gtk::ListBoxRow* t_row){
-	Dialog.set_visible(true);
-	if (!t_row) return;
-      Gtk::Widget* row_child = t_row->get_child();
 
-     auto* box = dynamic_cast<Gtk::Box*>(row_child);
-     if (box) {
-        Gtk::Widget* first_widget = box->get_first_child();
-        auto* label = dynamic_cast<Gtk::Label*>(first_widget);
-        if (label) {
-            std::string text = label->get_text();
-            //get the specified task object and its info from storage;
-            task_state tstate = tasklist[t_row->get_index()];
-            auto tsk = get_task_info(tstate.task_id);
-            Dialog.set_task_txt(tsk->name, tsk->desc, static_cast<int>(tsk->levl));
+void TodoWindow::edit_task(Gtk::ListBoxRow* t_row) {
+    if (!t_row) return;
 
-            
-        }
+    // read task_id stored on the row at creation time
+    int task_id = GPOINTER_TO_INT(t_row->get_data("task_id"));
+    if (task_id == -1) {
+        std::cerr << "Row has no valid task_id" << std::endl;
+        return;
+    }
+
+    auto tsk = get_task_info(task_id);
+    if (!tsk) {
+        std::cerr << "Task not found in db for id: " << task_id << std::endl;
+        return;
+    }
+
+    Dialog.set_task_txt(tsk->name, tsk->desc, static_cast<int>(tsk->levl));
+    Dialog.set_visible(true);
+}
+
+
+void TodoWindow::load_startup_data() {
+    for (auto const &t : tasklist) {
+        show_task(t.task_name, t.task_id);
     }
 }
-
-
-void TodoWindow::load_startup_data(){
-	for (auto const &taskname: tasklist){
-		show_task(taskname.task_name);}
-}
-
