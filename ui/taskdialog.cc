@@ -70,18 +70,42 @@ void TaskDialog::prior_area_set(){
 
 }
 
+void TaskDialog::set_add_mode() {
+    m_mode = DialogMode::Add;
+    m_editing_id = -1;
+    save_b.set_label("submit");
+}
+
+void TaskDialog::set_edit_mode(int task_id) {
+    m_mode = DialogMode::Edit;
+    m_editing_id = task_id;
+    save_b.set_label("update");
+}
+
 void TaskDialog::on_save() {
-    auto desc_buffer = t_desc.get_buffer();
-    Glib::ustring desc_text = desc_buffer->get_text();
     Glib::ustring name_text = t_name.get_text();
+    Glib::ustring desc_text = t_desc.get_buffer()->get_text();
+    Priority priority_val   = static_cast<Priority>(p_drop.get_selected());
 
-    Task mytask(name_text, desc_text, static_cast<Priority>(p_drop.get_selected()), "1990-12-21");
-    int new_id = mytask.add_to_db();
+    if (m_mode == DialogMode::Add) {
+        Task mytask(name_text, desc_text, priority_val, "1990-12-21");
+        int new_id = mytask.add_to_db();
+        if (new_id != -1) {
+            m_signal_task_saved.emit(new_id, name_text);
+            set_visible(false);
+        }
 
-    if (new_id != -1) {
-        m_signal_task_saved.emit(new_id, name_text);
-        set_visible(false);
-    } else {
-        std::cerr << "Save failed, not adding row" << std::endl;
+    } else {  // Edit mode
+        try {
+            pqxx::work tx(conn);
+            tx.exec(
+                "UPDATE taskinfo SET taskname=$1, taskdesc=$2, priority=$3 WHERE tasknum=$4",
+                pqxx::params(std::string(name_text),std::string(desc_text), priority_val, m_editing_id));
+            tx.commit();
+            m_signal_task_updated.emit(m_editing_id, name_text);
+            set_visible(false);
+        } catch (const std::exception &e) {
+            std::cerr << "Update error: " << e.what() << std::endl;
+        }
     }
 }

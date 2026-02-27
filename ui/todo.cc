@@ -20,6 +20,9 @@ TodoWindow::TodoWindow():
 	dialogSet();
 	load_startup_data();
 	//setting up style
+	auto context = TaskHolder.get_style_context();
+	context->add_class("task-holder");
+
 	
 	// 1. Create the CSS Provider
 	auto css_provider = Gtk::CssProvider::create();
@@ -29,6 +32,7 @@ TodoWindow::TodoWindow():
 		css_provider, 
 		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
 	);
+	get_style_context()->add_class("main-window");
 
 	TaskHolder.append(m_scroll);
 	OverallCont.append(TaskHolder);
@@ -36,6 +40,9 @@ TodoWindow::TodoWindow():
 	Dialog.signal_task_saved().connect(
         sigc::mem_fun(*this, &TodoWindow::on_task_saved)
     );
+	Dialog.signal_task_updated().connect(
+    sigc::mem_fun(*this, &TodoWindow::on_task_updated)
+	);
 
 	}
 
@@ -66,26 +73,22 @@ void TodoWindow::taskInputSet(){
 
 }
 
-void TodoWindow::taskHolderSet(){
-   
-	m_scroll.set_has_frame(false);
-	m_scroll.set_propagate_natural_width(true);
-
-	TaskHolder.set_vexpand(true);
-
-	m_scroll.set_child(list_cont);
-
-  	// Only show the scrollbars when they are necessary:
-  	m_scroll.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
-  	m_scroll.set_expand();
-	list_cont.set_selection_mode(Gtk::SelectionMode::SINGLE);
-	list_cont.set_size_request(730, -1);
-	list_cont.set_halign(Gtk::Align::CENTER);
-	
-	list_cont.set_margin_top(20);
-	list_cont.set_margin_bottom(20);
-	list_cont.signal_row_activated().connect(sigc::mem_fun(*this,&TodoWindow::edit_task),NULL);
+void TodoWindow::taskHolderSet() {
+    m_scroll.set_has_frame(false);
+    m_scroll.set_css_classes({});  // strip any theme classes
+    m_scroll.set_propagate_natural_width(true);
+    TaskHolder.set_vexpand(true);
+    m_scroll.set_child(list_cont);
+    m_scroll.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
+    m_scroll.set_expand();
+    list_cont.set_selection_mode(Gtk::SelectionMode::SINGLE);
+    list_cont.set_size_request(730, -1);
+    list_cont.set_halign(Gtk::Align::CENTER);
+    list_cont.set_margin_top(20);
+    list_cont.set_margin_bottom(20);
+    list_cont.signal_row_activated().connect(sigc::mem_fun(*this, &TodoWindow::edit_task), NULL);
 }
+
 
 void TodoWindow::dialogSet(){
 	Dialog.set_default_size(250, 100);
@@ -99,10 +102,29 @@ void TodoWindow::on_task_saved(int task_id, Glib::ustring task_name) {
     tasklist.push_back(task_state{task_id, std::string(task_name)});
 }
 
+// new handler — finds the row by its stored task_id and updates its label
+void TodoWindow::on_task_updated(int task_id, Glib::ustring new_name) {
+    // walk the listbox rows and find the one with matching task_id
+    auto* row = list_cont.get_row_at_index(0);
+    int i = 0;
+    while (row != nullptr) {
+        if (GPOINTER_TO_INT(row->get_data("task_id")) == task_id) {
+            // navigate to the label: row -> hbox -> first child
+            auto* box   = dynamic_cast<Gtk::Box*>(row->get_child());
+            if (box) {
+                auto* label = dynamic_cast<Gtk::Label*>(box->get_first_child());
+                if (label) label->set_text(new_name);
+            }
+            break;
+        }
+        row = list_cont.get_row_at_index(++i);
+    }
+}
 
 void TodoWindow::save_task(Gtk::Entry::IconPosition icon_pos){
 	if(icon_pos == Gtk::Entry::IconPosition::SECONDARY){
 		//setting up the dialogs additional properties
+		Dialog.set_add_mode();
 		Dialog.set_task_txt(TaskInput.get_text(),"",0);
 		Dialog.set_visible(true);
 
@@ -174,6 +196,7 @@ void TodoWindow::edit_task(Gtk::ListBoxRow* t_row) {
         return;
     }
 
+	Dialog.set_edit_mode(task_id);
     Dialog.set_task_txt(tsk->name, tsk->desc, static_cast<int>(tsk->levl));
     Dialog.set_visible(true);
 }

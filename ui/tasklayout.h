@@ -14,6 +14,7 @@ class TodoWindow: public Gtk::Window{
 		void dialogSet();
 		void taskHolderSet();
 		void on_task_saved(int task_id, Glib::ustring task_name);
+		void on_task_updated(int task_id, Glib::ustring new_name);
 	protected:
 		//functions
 		void show_task(Glib::ustring task_text, int task_id);
