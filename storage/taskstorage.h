@@ -27,17 +27,17 @@ public:
     std::string name;
     std::string desc;
     Priority levl;
-    std::string date;
+    std::string duedate;
 
     // Fixed constructor order to match your .cpp usage
     Task(std::string tname, std::string tdesc, Priority tlevl, std::string tdate)
-        : name{tname}, desc{tdesc}, levl{tlevl}, date{tdate} {}
+        : name{tname}, desc{tdesc}, levl{tlevl}, duedate{tdate} {}
 
-    int add_to_db();
-    void update_db_info(); // Fixed typo from 'updatde'
+    int add_to_db(); // Fixed typo from 'updatde'
 };
 
 // 4. Global Function Declarations
+extern void ensure_connected();
 extern pqxx::connection conn;
 std::vector<task_state> get_taskname_list();
 std::unique_ptr<Task> get_task_info(int taskid);

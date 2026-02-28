@@ -1,12 +1,11 @@
 // taskstorage.cc
 #include "taskstorage.h"
 #include <iostream>
-#include <memory>
 
 pqxx::connection conn("host=localhost port=5433 user=postgres dbname=taskbase connect_timeout=10");
 
 // Helper to ensure the connection is alive, reconnecting if needed
-static void ensure_connected() {
+void ensure_connected() {
     if (!conn.is_open()) {
         conn = pqxx::connection("host=localhost port=5433 user=postgres dbname=taskbase connect_timeout=10");
     }
@@ -18,7 +17,7 @@ int Task::add_to_db() {
         auto result = tx.exec(
             "INSERT INTO taskinfo (taskname, taskdesc, priority, duedate) "
             "VALUES ($1, $2, $3, $4) RETURNING tasknum",
-            pqxx::params(name, desc, levl, date));
+            pqxx::params(name, desc, levl, duedate));
         tx.commit();
         return result[0][0].as<int>();
     } catch (const std::exception &e) {
@@ -53,7 +52,7 @@ std::vector<task_state> get_taskname_list() {
     return list;
 }
 
-std::unique_ptr<Task> get_task_info(int taskid) {
+  std::unique_ptr<Task> get_task_info(int taskid) {
     try {
         ensure_connected();
         pqxx::nontransaction tx(conn);  // Read-only, no transaction needed
@@ -75,6 +74,6 @@ std::unique_ptr<Task> get_task_info(int taskid) {
         );
     } catch (const std::exception &e) {
         std::cerr << "Database error in get_task_info: " << e.what() << std::endl;
-    }
-    return nullptr;
+}
+return nullptr;
 }

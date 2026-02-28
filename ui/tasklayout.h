@@ -23,6 +23,8 @@ class TodoWindow: public Gtk::Window{
 		void save_task(Gtk::Entry::IconPosition icon_pos);
 		void search_for_task(Gtk::Entry::IconPosition icon_pos);
 		void edit_task(Gtk::ListBoxRow* t_row);
+    bool check_alarms();
+    void send_notification(const std::string& task_name);
 		
 		//widgets for the main window layout
 		Gtk::Box OverallCont;

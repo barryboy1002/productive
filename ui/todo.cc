@@ -43,6 +43,8 @@ TodoWindow::TodoWindow():
 	Dialog.signal_task_updated().connect(
     sigc::mem_fun(*this, &TodoWindow::on_task_updated)
 	);
+  Glib::signal_timeout().connect_seconds(
+    sigc::mem_fun(*this, &TodoWindow::check_alarms), 30);
 
 	}
 
@@ -55,7 +57,7 @@ void TodoWindow::taskInputSet(){
 	TaskInput.set_max_length(50);
 	
 	TaskInput.set_size_request(600,60);
-	TaskInput.set_text("Enter your Task now");
+	TaskInput.set_placeholder_text("Enter your Task now");
 	TaskInput.set_icon_from_icon_name("list-add",Gtk::Entry::IconPosition::SECONDARY);
 	TaskInput.signal_icon_press().connect(sigc::mem_fun(*this,&TodoWindow::save_task));
 	
@@ -206,4 +208,32 @@ void TodoWindow::load_startup_data() {
     for (auto const &t : tasklist) {
         show_task(t.task_name, t.task_id);
     }
+}
+// todo.cc
+bool TodoWindow::check_alarms() {
+    try {
+        ensure_connected();
+        pqxx::nontransaction tx(conn);
+        // find tasks whose duedate is within the next 30 seconds
+        auto result = tx.exec(
+            "SELECT tasknum, taskname FROM taskinfo "
+            "WHERE duedate BETWEEN NOW() AND NOW() + INTERVAL '30 seconds'");
+
+        for (auto row : result) {
+            int id              = row[0].as<int>();
+            std::string name    = row[1].as<std::string>();
+            send_notification(name);
+        }
+    } catch (const std::exception &e) {
+        std::cerr << "Alarm check error: " << e.what() << std::endl;
+    }
+    return true;  // returning true keeps the timer running
+}
+
+void TodoWindow::send_notification(const std::string& task_name) {
+    auto app = Gio::Application::get_default();
+    auto notification = Gio::Notification::create("Task Due");
+    notification->set_body(task_name);
+    notification->set_priority(Gio::Notification::Priority::URGENT);
+    app->send_notification(task_name, notification);
 }
